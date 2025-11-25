@@ -1,0 +1,12 @@
+ultralytics==8.3.200
+opencv-python==4.12.0.88
+numpy==2.2.6
+pandas==2.3.2
+matplotlib==3.10.6
+seaborn==0.13.2
+labelImg==1.8.6
+PyQt5==5.15.11
+torch==2.8.0+cu129
+torchvision==0.23.0+cu129
+pyyaml==6.0.2
+tqdm==4.65.2
