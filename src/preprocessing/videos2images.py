@@ -1,91 +1,90 @@
 import cv2
 import os
 import glob
+from pathlib import Path
 
-def extract_frames_from_video(video_path, output_folder, interval=30):
-    """
-    从视频中按间隔抽取帧并保存为图片。
-    
-    Args:
-        video_path (str): 视频文件的路径。
-        output_folder (str): 图片保存的目标文件夹。
-        interval (int): 抽帧间隔（每隔多少帧保存一张）。
-    """
-    # 获取视频文件名（不带后缀），用于给图片命名
-    video_name = os.path.splitext(os.path.basename(video_path))[0]
-    
-    # 打开视频
+# ================= 修复后的配置区域 =================
+# 获取当前脚本文件所在的绝对路径
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 拼接出 videos 和 images 的绝对路径
+# 这样无论你在哪个目录下运行命令，脚本都能准确找到同级目录下的 videos
+VIDEO_DIR = os.path.join(BASE_DIR, 'videos')
+OUTPUT_DIR = os.path.join(BASE_DIR, 'images')
+
+TIME_INTERVAL = 3.0 
+JPEG_QUALITY = 95
+# ===================================================
+
+def extract_frames_from_video(video_path, output_folder, interval_sec):
+    video_name = Path(video_path).stem
     cap = cv2.VideoCapture(video_path)
     
     if not cap.isOpened():
-        print(f"Error: 无法打开视频 {video_path}")
+        print(f"[Error] 无法打开视频: {video_path}")
+        return
+    # 获取视频的帧率 (FPS)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    if fps == 0:
+        print(f"[Error] 无法获取FPS，跳过: {video_path}")
         return
 
-    # 获取视频的基本信息
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_step = int(fps * interval_sec)
+    if frame_step < 1: frame_step = 1
+
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(f"正在处理: {video_name} | FPS: {fps:.2f} | 总帧数: {total_frames}")
 
-    frame_count = 0
+    current_frame = 0
     saved_count = 0
-    
+
     while True:
         ret, frame = cap.read()
-        
-        # 如果读取不到帧（视频结束），跳出循环
-        if not ret:
-            break
-        
-        # 按照设定的间隔保存图片
-        if frame_count % interval == 0:
-            # 构造输出文件名: 视频名_帧序号.jpg
-            image_name = f"{video_name}_frame_{frame_count:06d}.jpg"
-            save_path = os.path.join(output_folder, image_name)
-            
-            # 保存图片
-            cv2.imwrite(save_path, frame)
+        if not ret: break
+
+        if current_frame % frame_step == 0:
+            out_name = f"{video_name}_{str(current_frame).zfill(6)}.jpg"
+            out_path = os.path.join(output_folder, out_name)
+            cv2.imwrite(out_path, frame, [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
             saved_count += 1
-            
-        frame_count += 1
+        current_frame += 1
 
     cap.release()
-    print(f"完成: {video_name} | 已保存图片: {saved_count} 张\n")
+    print(f"完成: {video_name} -> {saved_count} 张图片")
 
-def batch_process(input_dir, output_dir, interval=30):
-    """
-    批量处理文件夹下的所有视频
-    """
-    # 如果输出目录不存在，则创建
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-        print(f"创建输出目录: {output_dir}")
-
-    # 获取所有mp4文件
-    video_files = glob.glob(os.path.join(input_dir, "*.mp4"))
+def main():
+    # --- 调试信息打印 ---
+    print(f"脚本所在路径: {BASE_DIR}")
+    print(f"寻找视频路径: {VIDEO_DIR}")
     
-    if not video_files:
-        print(f"在 {input_dir} 中未找到 .mp4 文件。")
+    if not os.path.exists(VIDEO_DIR):
+        print(f"\n[致命错误] 找不到 videos 文件夹！")
+        print(f"请确认你的文件夹名字是否完全叫 'videos' (注意大小写)")
+        print(f"当前目录下包含: {os.listdir(BASE_DIR)}")
         return
 
-    print(f"共发现 {len(video_files)} 个视频文件，准备开始处理...\n")
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
 
-    for video_file in video_files:
-        extract_frames_from_video(video_file, output_dir, interval)
+    # 支持更多无人机常见格式 (.MOV, .AVI, .mkv) 且忽略大小写
+    exts = ['*.mp4', '*.MP4', '*.mov', '*.MOV', '*.avi', '*.AVI']
+    video_files = []
+    for ext in exts:
+        video_files.extend(glob.glob(os.path.join(VIDEO_DIR, ext)))
+    
+    video_files = sorted(list(set(video_files))) # 去重并排序
 
-    print("所有视频处理完毕！")
+    if not video_files:
+        print(f"\n[警告] 在 '{VIDEO_DIR}' 里面虽然有文件夹，但没找到视频文件。")
+        print(f"请检查视频后缀名。该文件夹下的文件有: {os.listdir(VIDEO_DIR)}")
+        return
 
-# ================= 配置区域 =================
+    print(f"共发现 {len(video_files)} 个视频文件，开始处理...\n")
+
+    for video_path in video_files:
+        extract_frames_from_video(video_path, OUTPUT_DIR, TIME_INTERVAL)
+
+    print("\n所有视频处理完毕！")
+#
 if __name__ == "__main__":
-    # 1. 设置视频所在的文件夹路径
-    INPUT_VIDEO_DIR = r"./videos"  # 请修改为你的视频文件夹路径
-    
-    # 2. 设置图片保存的文件夹路径
-    OUTPUT_IMAGE_DIR = r"./dataset_images" # 脚本会自动创建这个文件夹
-    
-    # 3. 设置抽帧间隔 (重要)
-    # 无人机视频通常是30fps或60fps。
-    # 设置为 30 表示每1秒存一张（如果是30fps视频）。
-    # 如果视频变化很慢（如芦苇荡平飞），建议设置为 60 或 90（每2-3秒一张）。
-    FRAME_INTERVAL = 60 
-
-    batch_process(INPUT_VIDEO_DIR, OUTPUT_IMAGE_DIR, FRAME_INTERVAL)
+    main()

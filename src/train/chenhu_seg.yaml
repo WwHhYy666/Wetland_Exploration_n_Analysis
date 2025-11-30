@@ -1,0 +1,13 @@
+# 数据集配置文件
+path: ./datasets/chenhu_seg
+train: train/images
+val: val/images
+
+# 类别名称 (Key 必须从 0 开始)
+names:
+  0: Phragmites australis
+  1: Miscanthus sacchariflorus
+  2: Typha orientalis
+  3: Nelumbo nucifera
+  4: Alternanthera philoxeroides
+  5: Carex spp.
