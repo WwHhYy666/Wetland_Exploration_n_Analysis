@@ -13,17 +13,20 @@ env/
 
 # 3. 忽略大型数据文件 (重要！！！)
 # 我们只上传代码，数据通常放在网盘链接里，或者只保留少量样例
-data/
-data/archive/
-data/self_dataset/videos/*
+# kaggle 公开数据集，孟加拉国湿地植物掩码标注
+data/archive/  
+# 经过数据增强数据集
+data/chenhu_seg/
+# 添加了RTS信息的数据集
+data/dataset_images_analysis/
+# 原始视频、切片图像、标注json以及yolotxt
+data/self_dataset/
+
 
 # 4. 忽略训练输出的大型文件
 # runs/ 文件夹通常包含大量日志和模型，建议忽略
 # 如果你想保留验证集的图表，可以手动添加例外，但通常不传
-runs/
 src/evaluation/runs/
-src/train/Chenhu_HighRes_Stable/s_batch8_worker2_1024/weights/
-
 
 # 5. 忽略 YOLO 下载的预训练权重
 *.pt
