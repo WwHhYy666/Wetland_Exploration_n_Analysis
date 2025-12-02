@@ -21,12 +21,16 @@ data/chenhu_seg/
 data/dataset_images_analysis/
 # 原始视频、切片图像、标注json以及yolotxt
 data/self_dataset/
+data/DOM/
 
 
 # 4. 忽略训练输出的大型文件
 # runs/ 文件夹通常包含大量日志和模型，建议忽略
 # 如果你想保留验证集的图表，可以手动添加例外，但通常不传
 src/evaluation/runs/
+runs/DOM/*.zip
+runs/DOM/*.laz
+
 
 # 5. 忽略 YOLO 下载的预训练权重
 *.pt

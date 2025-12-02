@@ -115,11 +115,4 @@ python src/val.py --weights models/wetland_best.pt --data configs/data.yaml
 
 ## 📊 实验结果 | Results
 1. 可视化效果
- (请在此处插入一张您的模型推理效果图，例如：)
-![alt text](data/samples/demo_result.jpg)
 2. 性能指标
-类别 (Class)	Precision (P)	Recall (R)	mAP@50	mAP@50-95
-All	0.XX	0.XX	0.XX	0.XX
-芦苇 (Reed)	0.XX	0.XX	0.XX	0.XX
-苔草 (Sedge)	0.XX	0.XX	0.XX	0.XX
-菰 (Zizania)	0.XX	0.XX	0.XX	0.XX
